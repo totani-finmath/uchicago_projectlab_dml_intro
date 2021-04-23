@@ -182,17 +182,17 @@ class VasicekBond:
     
     def __init__(self, 
                  dynamics,
-                 contract, T1=0.5):
+                 contract):
         
         self.dynamics = Dynamics()
         self.dynamics.r0 = dynamics.r0
         self.dynamics.theta = dynamics.theta
         self.dynamics.mu = dynamics.mu
         self.dynamics.sigma = dynamics.sigma
-        self.contract_T2 = Contract()
-        self.contract_T2.T = contract.T
-        self.contract_T1= Contract()
-        self.contract_T1.T = max(self.contract_T2.T-T1,0)
+        self.contract_T1 = Contract()
+        self.contract_T1.T = contract.T
+        #self.contract_T1= Contract()
+        #self.contract_T1.T = max(self.contract_T2.T-T1,0)
     
     # training set: returns r_1 (mx1), B_T (mx1) and dC2/dS1 (mx1)
     def trainingSet(self, m, seed=None):
@@ -230,7 +230,7 @@ class VasicekBond:
 # ----------------------------------------------------
 # simulation set sizes to perform
 # sizes = [1024, 8192, 65536]
-sizes = [1024, 4096, 16384]
+sizes = [1024, 4096]
 # show delta?
 showDeltas = True
 # seed
@@ -249,7 +249,7 @@ generator_dom = VasicekBond(dom_bond,contract)
 xAxis_dom, yTest_dom, dydxTest_dom, values_dom, deltas_dom, time_dom = \
     ldml.test(generator_dom, sizes, nTest, simulSeed, None, weightSeed)
 # training foreign
-generator_fgn = VasicekBond(dom_bond,contract)
+generator_fgn = VasicekBond(fgn_bond,contract)
 xAxis_fgn, yTest_fgn, dydxTest_fgn, values_fgn, deltas_fgn, time_fgn = \
     ldml.test(generator_fgn, sizes, nTest, simulSeed, None, weightSeed)
 # show predicitions
@@ -279,11 +279,11 @@ grids_cn_fgn, prices_cn_fgn = pricer_bond_vasicek_CrankNicolson(contract,fgn_bon
 sim_price_cn_dom = [interpolate_rate(grids_cn_dom,prices_cn_dom,r) for r in sim_rs_dom]
 sim_price_cn_fgn = [interpolate_rate(grids_cn_fgn,prices_cn_fgn,r) for r in sim_rs_fgn]
 # SML
-trg_set = ('standard',sizes[0])
+trg_set = ('standard',sizes[1])
 sim_price_sml_dom = [interpolate_rate(xAxis_dom.flatten(),values_dom[trg_set].flatten(),r) for r in sim_rs_dom]
 sim_price_sml_fgn = [interpolate_rate(xAxis_fgn.flatten(),values_fgn[trg_set].flatten(),r) for r in sim_rs_fgn]
 # DML
-trg_set = ('differential',sizes[2])
+trg_set = ('differential',sizes[1])
 sim_price_dml_dom = [interpolate_rate(xAxis_dom.flatten(),values_dom[trg_set].flatten(),r) for r in sim_rs_dom]
 sim_price_dml_fgn = [interpolate_rate(xAxis_fgn.flatten(),values_fgn[trg_set].flatten(),r) for r in sim_rs_fgn]
 # true price
@@ -295,6 +295,9 @@ plt.plot(sim_rs_dom,sim_price_cn_dom,label='CN')
 plt.plot(sim_rs_dom,sim_price_sml_dom,label='SML')
 plt.plot(sim_rs_dom,sim_price_dml_dom,label='DML')
 plt.plot(sim_rs_dom,sim_price_tru_dom,label='Analytical',ls=':')
+plt.title('Domestic ZCB prices')
+plt.xlabel('domestic interest spot rate')
+plt.xlabel('bond price')
 plt.legend()
 plt.show()
 
@@ -302,25 +305,26 @@ plt.show()
 # forward price comparison
 # ----------------------------------------------------
 fwd_cn   = np.zeros(sim_size)
+fwd_sml  = np.zeros(sim_size)
 fwd_dml  = np.zeros(sim_size)
 fwd_anal = np.zeros(sim_size)
 for i in range(sim_size):
     fwd_cn[i]   = X0 * sim_price_cn_fgn[i] / sim_price_cn_dom[i]
+    fwd_sml[i]  = X0 * sim_price_sml_fgn[i] / sim_price_sml_dom[i]
     fwd_dml[i]  = X0 * sim_price_dml_fgn[i] / sim_price_dml_dom[i]
-    #fwd_anal[i] = X0 * sim_price_tru_fgn[i] / sim_price_tru_dom[i]
     fgn_bond.r0 = sim_rs_fgn[i]
     dom_bond.r0 = sim_rs_dom[i]
     fwd_anal[i] = forward_exchange_rate(X0,fgn_bond,dom_bond,contract)
 # figure domestic
 plt.figure()
 plt.plot(sim_rs_dom,fwd_cn,label='CN')
+plt.plot(sim_rs_dom,fwd_dml,label='SML')
 plt.plot(sim_rs_dom,fwd_dml,label='DML')
 plt.plot(sim_rs_dom,fwd_anal,label='Analytical',ls=':',lw=2.5)
+plt.title('FX forward prices')
+plt.xlabel('domestic interest spot rate')
+plt.xlabel('forward price')
 plt.legend()
 plt.show()
 
-
-
-
-
-
+# %%
