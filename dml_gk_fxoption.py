@@ -162,7 +162,6 @@ def call_FX_GK_MC(contract,dynamics,MC):
 #%% --------------------------------------------------
 # generator
 # ----------------------------------------------------
-# %%
 # main class
 class BlackScholesFX:
     

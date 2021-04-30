@@ -358,14 +358,14 @@ else:
 params_new = list(res.x)
 
 #%% --------------------------------------------------
-# review results
+# review results (takes several hours)
 # ----------------------------------------------------
 '''
 method='SLSQP'
 upr_itg = np.inf
 lwr_itg = -np.inf
 params_init = [0.5, 0.1, 0.05, 0.02, -0.5]
-174.80168081124623 [min]
+174.802 [min]
 
      fun: 0.007100906657011682
      jac: array([-0.00368487,  0.00014465,  0.05815335,  0.05066651,  0.00305027])
@@ -523,7 +523,7 @@ def monte_carlo_g2pp(num_mc,horizon,params_mc,contract,num_grid=1000,seed=1234):
     return np.array(lst_x1s).T, np.array(lst_x2s).T, ts_new
 
 #%% --------------------------------------------------
-# build irs portfolio
+# build irs portfolio <DML project>
 # ----------------------------------------------------
 t_tnr = 7.0
 X = 0.0125 #0.0125 for 7y, 0.0155 for 10y around ATM
@@ -542,17 +542,33 @@ def build_contract_irs(t_tnr,strike,omega):
 contract_irs = build_contract_irs(t_tnr,X,omega)
 
 #%% --------------------------------------------------
-# run g2++ simulation
+# run g2++ simulation <DML project>
 # ----------------------------------------------------
 # settings
-num_mc = 100
+num_mc = 10000
 horizon = 10.0
+horizon = max(horizon, t_tnr)
 # run simulation
 # contract is only used to add simulation grids
 x1s, x2s, ts_new = monte_carlo_g2pp(num_mc,horizon,params_new,contract_irs)
 
 #%% --------------------------------------------------
-# exposure calculation
+# g2++ factor plot <DML project>
+# ----------------------------------------------------
+num_sample_path = 15
+# figure
+fig, ax = plt.subplots(1,2,figsize=(12,5))
+for i in range(num_sample_path):
+    ax[0].plot(ts_new,x1s[i,:],label='factor#1-'+str(i+1),ls='-',lw=0.8)
+    ax[1].plot(ts_new,x2s[i,:],label='factor#2-'+str(i+1),ls='-',lw=0.8)
+for j in range(2):
+    ax[j].set_title('Gaussian factor#'+str(j+1)+' for '+label_side+' IRS '+str(int(t_tnr))+'yrs')
+    ax[j].set_xlabel('Time')
+    ax[j].legend()
+plt.show()
+
+#%% --------------------------------------------------
+# exposure calculation <DML project>
 # ----------------------------------------------------
 num_grid_new = len(ts_new)
 lst_res_mc = []
@@ -568,10 +584,10 @@ epe_mc = res_mc * (res_mc>0.0)
 ene_mc = res_mc * (res_mc<0.0)
 
 #%% --------------------------------------------------
-# exposure sample
+# exposure sample <DML project>
 # ----------------------------------------------------
 plt.figure()
-for i in range(7):
+for i in range(num_sample_path):
     plt.plot(ts_new[:-1],res_mc[i,:],label='Exposure '+str(i+1))
 plt.title('Exposure profile samples for '+label_side+' IRS '+str(int(t_tnr))+'yrs')
 plt.xlabel('Time')
@@ -580,7 +596,7 @@ plt.legend()
 plt.show()
 
 #%% --------------------------------------------------
-# exposure plot
+# exposure plot <DML project>
 # ----------------------------------------------------
 plt.figure()
 plt.plot(ts_new[:-1],epe_mc.mean(axis=0),label='EPE')
@@ -592,19 +608,5 @@ plt.ylabel('Exposure')
 plt.legend()
 plt.show()
 
-#%% --------------------------------------------------
-# scatter plot
-# ----------------------------------------------------
-t_train = []
-e_train = epe_mc.flatten('F')
-for i in range(num_grid_new-1):
-    t_train = t_train + [ts_new[i]]*num_mc
-
-#%% figure
-plt.figure(figsize=(8,8))
-plt.scatter(t_train,e_train,alpha=0.5,s=1.0)
-plt.show()
 
 # %%
-
-
