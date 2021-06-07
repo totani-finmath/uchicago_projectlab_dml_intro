@@ -440,7 +440,7 @@ if False:
     show_vols3d(df_vols_model,'G2++')
 
 #%% ##################################################
-# Monte Carlo simulation
+# Monte Carlo simulation <DML project>
 # ####################################################
 #%% --------------------------------------------------
 # irs pricer
@@ -482,14 +482,14 @@ def pv_irs_g2pp(s,cont_irs,params,x1,x2,x1last,x2last):
     pv_float = np.array(tau_float_s[0] * get_zcb_g2pp(s,s+ts_float_s[1],params,x1_last,x2_last) \
                         * get_fwd_g2pp(ts_float_s[0],ts_float_s[1],params,x1_last,x2_last)).T 
     # float CF after 1st CF
-    if len(tau_float_s) > 1: # if still floating
+    if len(tau_float_s) > 1: # if still exist floating CF
         pv_float += np.array([tau_float_s[i] * get_zcb_g2pp(s,s+ts_float_s[i+1],params,x1,x2) \
                              * get_fwd_g2pp(ts_float_s[i],ts_float_s[i+1],params,x1,x2) \
                              for i in range(1,len(tau_float_s))]).T.sum(axis=1)
     return omega * (pv_float - pv_fixed)
 
 #%% --------------------------------------------------
-# Monte Carlo simulation
+# Monte Carlo simulation <DML project>
 # ----------------------------------------------------
 # two factor simulator
 def monte_carlo_g2pp(num_mc,horizon,params_mc,contract,num_grid=1000,seed=1234):
@@ -608,5 +608,7 @@ plt.ylabel('Exposure')
 plt.legend()
 plt.show()
 
+
+# %%
 
 # %%
