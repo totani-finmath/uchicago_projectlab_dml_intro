@@ -159,8 +159,6 @@ class IRS:
                                  for i in range(1,len(tau_float_s))]).sum(axis=0).flatten()
             pv_float = pv_float + pv_float2
         return self.side * (pv_float - pv_fixed)
-        #return pv_float
-        #return pv_fixed
 
 # %% --------------------------------------------------
 # test
@@ -182,16 +180,6 @@ plt.plot(ts_sim, np.maximum(price,0.0).mean(axis=1), label='EPE')
 plt.plot(ts_sim, np.minimum(price,0.0).mean(axis=1), label='ENE')
 plt.plot(ts_sim, price.mean(axis=1), label='EE')
 plt.show()
-
-
-# %% --------------------------------------------------
-# test
-# -----------------------------------------------------
-s = 1.0
-t_opt = 2.0
-t_bnd = 5.0
-test = dynamics.get_zbo(s, t_opt, t_bnd, dynamics.get_zcb(t_opt, t_bnd))
-print(test)
 
 
 # %%
